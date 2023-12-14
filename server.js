@@ -21,7 +21,9 @@ app.use(express.json())
 app.use(`/${ROOT_ENDPOINT}/identity`, require("./src/routes/identity.routes"))
 //auth
 app.use(verifyJWT)
+app.use(`/${ROOT_ENDPOINT}/profile`, require("./src/routes/profile.routes"))
 app.use(`/${ROOT_ENDPOINT}/posts`, require("./src/routes/posts.routes"))
+app.use(`/${ROOT_ENDPOINT}/files`, require("./src/routes/files.routes"))
 
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`))
 

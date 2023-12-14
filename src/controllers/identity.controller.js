@@ -35,7 +35,7 @@ class IdentityController {
         id: uuid(),
         avatar: null,
         birthdate: null,
-        updated: new Date(),
+        updated: null,
         role: 'client',
         created: new Date(),
         firstName,
@@ -93,7 +93,8 @@ class IdentityController {
 
       jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, async (err, user) => {
         if (err) return res.sendStatus(403)
-        const tokenIncludes = {password: user.username, id: user.id}
+        console.log(user)
+        const tokenIncludes = {username: user.username, id: user.id}
 
         const accessToken = generateAccessToken(tokenIncludes)
         const refreshToken = await generateRefreshToken(tokenIncludes)

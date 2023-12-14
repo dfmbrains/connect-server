@@ -10,6 +10,9 @@
 /build
 /.idea
 
+#static
+./static
+
 # misc
 .DS_Store
 .env.local
