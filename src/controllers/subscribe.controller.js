@@ -3,6 +3,22 @@ const db = require("../../db");
 const selectOneElement = require("../middleware/selectOneElement");
 
 class SubscribeController {
+  async getUserSubscribersCount(req, res) {
+    const {targetUserId} = req.query
+
+    if (!targetUserId) {
+      return res.json({message: `TargetUserId is required`, value: null, status: false})
+    }
+
+    try {
+      const targetCount = selectOneElement(await db.query('SELECT COUNT(*) FROM subscriptions WHERE target = $1', [targetUserId]))
+
+      res.json({message: '', value: +targetCount.count, status: true})
+    } catch (err) {
+      res.status(500).send(`Error getting subscribes by target: ${err.message}`);
+    }
+  }
+
   async getUserSubscribers(req, res) {
     const {targetUserId} = req.query
 
@@ -20,7 +36,7 @@ class SubscribeController {
 
       res.json({message: '', value: profiles.rows, status: true})
     } catch (err) {
-      res.status(500).send(`Error creating subscribe: ${err.message}`);
+      res.status(500).send(`Error getting subscribes by target: ${err.message}`);
     }
   }
 
@@ -41,7 +57,7 @@ class SubscribeController {
 
       res.json({message: '', value: profiles.rows, status: true})
     } catch (err) {
-      res.status(500).send(`Error creating subscribe: ${err.message}`);
+      res.status(500).send(`Error getting subscribers by user: ${err.message}`);
     }
   }
 
@@ -70,11 +86,16 @@ class SubscribeController {
     }
 
     try {
+      const subCheckResult = selectOneElement(await db.query('SELECT * FROM subscriptions WHERE user_id = $1 AND target = $2', [req.userId, targetUserId]));
+      if (!subCheckResult) {
+        return res.json({message: 'Subscribe does not exist', value: null, status: false});
+      }
+
       await db.query('DELETE FROM subscriptions where user_id = $1 AND target = $2', [req.userId, targetUserId]);
 
       res.json({message: '', value: 'success', status: true});
     } catch (err) {
-      res.status(500).send(`Error creating subscribe: ${err.message}`);
+      res.status(500).send(`Error deleting subscribe: ${err.message}`);
     }
   }
 }

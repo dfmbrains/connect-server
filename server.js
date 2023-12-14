@@ -25,6 +25,7 @@ app.use(`/${ROOT_ENDPOINT}/profile`, require("./src/routes/profile.routes"))
 app.use(`/${ROOT_ENDPOINT}/posts`, require("./src/routes/posts.routes"))
 app.use(`/${ROOT_ENDPOINT}/files`, require("./src/routes/files.routes"))
 app.use(`/${ROOT_ENDPOINT}/subscribe`, require("./src/routes/subscribe.routes"))
+app.use(`/${ROOT_ENDPOINT}/likes`, require("./src/routes/likes.routes"))
 
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`))
 

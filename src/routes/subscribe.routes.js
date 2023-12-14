@@ -6,5 +6,6 @@ router.post('/', subscribeController.createSubscribe)
 router.delete('/', subscribeController.deleteSubscribe)
 router.get('/byTarget', subscribeController.getUserSubscribers)
 router.get('/byUser', subscribeController.getSubscribesByUser)
+router.get('/countByTarget', subscribeController.getUserSubscribersCount)
 
 module.exports = router

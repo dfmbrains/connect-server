@@ -57,7 +57,7 @@ CREATE TABLE posts
 CREATE TABLE likes
 (
     id      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    post    UUID REFERENCES posts (id),
+    post_id    UUID REFERENCES posts (id),
     user_id UUID REFERENCES profiles (id),
     created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
