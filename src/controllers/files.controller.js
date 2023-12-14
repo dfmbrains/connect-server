@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require("fs");
-const {v4: uuid} = require('uuid');
 
 const db = require('../../db')
 
@@ -11,11 +10,10 @@ class FilesController {
     const imagePath = req.file.path;
 
     try {
-      const fileId = uuid()
-      await db.query('INSERT INTO images (id, path, created) VALUES ($1, $2, $3)', [fileId, imagePath, new Date()]);
-      res.json({message: 'Image uploaded successfully', value: fileId, status: true})
+      await db.query('INSERT INTO images (path) VALUES ($1)', [imagePath]);
+      res.json({message: 'Image uploaded successfully', status: true})
     } catch (err) {
-      res.status(500).send('Error uploading image');
+      res.json({message: 'Error uploading image', status: false})
     }
   }
 
@@ -42,9 +40,10 @@ class FilesController {
 
     try {
       const file = selectOneElement(await db.query('SELECT * FROM images where id = $1', [id]));
-      await db.query('DELETE FROM images where id = $1 RETURNING *', [id])
 
       if (file) {
+        await db.query('DELETE FROM images where id = $1', [id])
+
         const filePath = path.resolve(__dirname, '../../', file.path);
 
         fs.unlink(filePath, (err) => {

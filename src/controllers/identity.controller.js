@@ -4,17 +4,16 @@ const bcrypt = require('bcrypt');
 const db = require('../../db')
 
 const selectOneElement = require("../middleware/selectOneElement");
-const {v4: uuid} = require('uuid');
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET
 
-const generateAccessToken = (user) => {
-  return jwt.sign(user, ACCESS_TOKEN_SECRET, {expiresIn: '24h'})
+const generateAccessToken = (userId) => {
+  return jwt.sign({userId}, ACCESS_TOKEN_SECRET, {expiresIn: '24h'})
 }
 
-const generateRefreshToken = async (user) => {
-  const refreshToken = jwt.sign(user, REFRESH_TOKEN_SECRET, {expiresIn: '48h'})
+const generateRefreshToken = async (userId) => {
+  const refreshToken = jwt.sign({userId}, REFRESH_TOKEN_SECRET, {expiresIn: '48h'})
   await db.query('INSERT INTO refresh_tokens (refresh_token) values ($1)', [refreshToken])
 
   return refreshToken
@@ -31,21 +30,8 @@ class IdentityController {
     try {
       const hashedPass = await bcrypt.hash(password, 10);
 
-      const newProfile = {
-        id: uuid(),
-        avatar: null,
-        birthdate: null,
-        updated: null,
-        role: 'client',
-        created: new Date(),
-        firstName,
-        lastName,
-        username,
-        sex,
-      };
-
-      await db.query('INSERT INTO identity_users (password, username) values ($1, $2)', [hashedPass, username])
-      await db.query('INSERT INTO profiles (id, username, firstname, lastname, avatar, birthdate, role, sex, updated, created) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [newProfile.id, newProfile.username, newProfile.firstName, newProfile.lastName, newProfile.avatar, newProfile.birthdate, newProfile.role, newProfile.sex, newProfile.updated, newProfile.created])
+      const identityProfile = selectOneElement(await db.query('INSERT INTO identity_users (password, username) values ($1, $2) RETURNING *', [hashedPass, username]))
+      await db.query('INSERT INTO profiles (id, firstname, lastname, sex) values ($1, $2, $3, $4)', [identityProfile.id, firstName, lastName, sex])
 
       res.json({'message': 'New user created!'});
     } catch (err) {
@@ -60,12 +46,14 @@ class IdentityController {
 
     try {
       const foundIdentityProfile = selectOneElement(await db.query('SELECT * FROM identity_users where username = $1', [username]));
-      const foundUserProfile = selectOneElement(await db.query('SELECT * FROM profiles where username = $1', [username]));
-      if (!foundIdentityProfile || !foundUserProfile) return res.sendStatus(401);
+      if (!foundIdentityProfile) return res.sendStatus(401);
+
+      const foundUserProfile = selectOneElement(await db.query('SELECT * FROM profiles where id = $1', [foundIdentityProfile.id]));
+      if (!foundUserProfile) return res.sendStatus(401);
 
       const match = await bcrypt.compare(password, foundIdentityProfile.password);
       if (match) {
-        const tokenIncludes = {username, id: foundUserProfile.id}
+        const tokenIncludes = foundUserProfile.id
 
         const accessToken = generateAccessToken(tokenIncludes)
         const refreshToken = await generateRefreshToken(tokenIncludes)
@@ -91,13 +79,11 @@ class IdentityController {
 
       await db.query('DELETE FROM refresh_tokens where refresh_token = $1', [refreshToken]);
 
-      jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, async (err, user) => {
+      jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, async (err, {userId}) => {
         if (err) return res.sendStatus(403)
-        console.log(user)
-        const tokenIncludes = {username: user.username, id: user.id}
 
-        const accessToken = generateAccessToken(tokenIncludes)
-        const refreshToken = await generateRefreshToken(tokenIncludes)
+        const accessToken = generateAccessToken(userId)
+        const refreshToken = await generateRefreshToken(userId)
 
         res.json({accessToken, refreshToken})
       })

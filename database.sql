@@ -1,50 +1,47 @@
-create TABLE refresh_tokens
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE refresh_tokens
 (
     id            SERIAL PRIMARY KEY,
-    refresh_token varchar(255)
+    refresh_token TEXT
 );
 
-create TABLE identity_users
+CREATE TABLE identity_users
 (
-    id       SERIAL PRIMARY KEY,
-    password varchar(255),
-    username varchar(255) UNIQUE,
-    status   BOOLEAN DEFAULT false
+    id       UUID PRIMARY KEY UNIQUE DEFAULT uuid_generate_v4(),
+    password TEXT,
+    username VARCHAR(255) UNIQUE,
+    status   BOOLEAN          DEFAULT true
 );
 
-create TABLE images
+CREATE TABLE images
 (
-    id      varchar(255) UNIQUE,
+    id      UUID PRIMARY KEY         DEFAULT uuid_generate_v4(),
     path    TEXT NOT NULL,
-    created timestamp with time zone
+    created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-create TABLE profiles
+CREATE TABLE profiles
 (
-    id        varchar(255) UNIQUE,
-    username  varchar(255) UNIQUE,
-    firstName varchar(255),
-    lastName  varchar(255),
-    avatar    varchar(255),
-    birthdate timestamp with time zone,
-    role      varchar(255),
-    sex       int,
-    updated   timestamp with time zone null,
-    created   timestamp with time zone,
-    FOREIGN KEY (username) REFERENCES identity_users (username),
-    FOREIGN KEY (avatar) REFERENCES images (id)
+    id        UUID PRIMARY KEY REFERENCES identity_users (id),
+    firstName VARCHAR(255),
+    lastName  VARCHAR(255),
+    avatar    UUID REFERENCES images (id),
+    birthdate TIMESTAMP WITH TIME ZONE,
+    role      VARCHAR(255)             DEFAULT 'CLIENT',
+    sex       INT CHECK (sex IN (0, 1)),
+    updated   TIMESTAMP WITH TIME ZONE,
+    created   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-create TABLE posts
+CREATE TABLE posts
 (
-    id          varchar(255) UNIQUE,
-    user_id     varchar(255) UNIQUE,
-    title       varchar(255),
-    description varchar(255),
-    likes       varchar(255),
-    image       varchar(255),
-    updated     timestamp with time zone,
-    created     timestamp with time zone,
-    FOREIGN KEY (user_id) REFERENCES profiles (id),
-    FOREIGN KEY (image) REFERENCES images (id)
+    id          UUID PRIMARY KEY         DEFAULT uuid_generate_v4(),
+    user_id     UUID REFERENCES profiles (id),
+    title       VARCHAR(255),
+    description TEXT,
+    likes       INTEGER                  DEFAULT 0,
+    image       UUID REFERENCES images (id),
+    updated     TIMESTAMP WITH TIME ZONE,
+    created     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

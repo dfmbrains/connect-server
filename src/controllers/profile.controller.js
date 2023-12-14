@@ -10,10 +10,10 @@ class ProfileController {
     const token = authHeader && authHeader.split(' ')[1]
 
     try {
-      jwt.verify(token, ACCESS_TOKEN_SECRET, async (err, user) => {
+      jwt.verify(token, ACCESS_TOKEN_SECRET, async (err, {userId}) => {
         if (err) return res.sendStatus(403)
 
-        const foundUserProfile = selectOneElement(await db.query('SELECT * FROM profiles where username = $1', [user.username]));
+        const foundUserProfile = selectOneElement(await db.query('SELECT * FROM profiles where id = $1', [userId]));
 
         if (foundUserProfile) {
           return res.json(foundUserProfile)
