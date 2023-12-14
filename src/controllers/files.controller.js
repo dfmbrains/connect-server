@@ -10,10 +10,10 @@ class FilesController {
     const imagePath = req.file.path;
 
     try {
-      await db.query('INSERT INTO images (path) VALUES ($1)', [imagePath]);
-      res.json({message: 'Image uploaded successfully', status: true})
+      const file = selectOneElement(await db.query('INSERT INTO images (path) VALUES ($1) RETURNING *', [imagePath]));
+      res.json({message: 'Image uploaded successfully', value: {id: file.id, created: file.created}, status: true})
     } catch (err) {
-      res.json({message: 'Error uploading image', status: false})
+      res.json({message: 'Error uploading image', value: null, status: false})
     }
   }
 

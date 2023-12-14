@@ -9,10 +9,10 @@ const verifyJWT = (req, res, next) => {
 
   if (!token) return res.sendStatus(401)
 
-  jwt.verify(token, ACCESS_TOKEN_SECRET, (err, user) => {
+  jwt.verify(token, ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) return res.sendStatus(403)
 
-    req.user = user
+    req.userId = decoded.userId
     next()
   })
 }

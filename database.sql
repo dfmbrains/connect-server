@@ -11,7 +11,7 @@ CREATE TABLE identity_users
     id       UUID PRIMARY KEY UNIQUE DEFAULT uuid_generate_v4(),
     password TEXT,
     username VARCHAR(255) UNIQUE,
-    status   BOOLEAN          DEFAULT true
+    status   BOOLEAN                 DEFAULT true
 );
 
 CREATE TABLE images
@@ -32,6 +32,13 @@ CREATE TABLE profiles
     sex       INT CHECK (sex IN (0, 1)),
     updated   TIMESTAMP WITH TIME ZONE,
     created   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE subscriptions
+(
+    id      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    target  UUID REFERENCES profiles (id),
+    user_id UUID REFERENCES profiles (id)
 );
 
 CREATE TABLE posts
