@@ -24,6 +24,7 @@ app.use(verifyJWT)
 app.use(`/${ROOT_ENDPOINT}/profile`, require("./src/routes/profile.routes"))
 app.use(`/${ROOT_ENDPOINT}/posts`, require("./src/routes/posts.routes"))
 app.use(`/${ROOT_ENDPOINT}/files`, require("./src/routes/files.routes"))
+app.use(`/${ROOT_ENDPOINT}/subscribe`, require("./src/routes/subscribe.routes"))
 
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`))
 

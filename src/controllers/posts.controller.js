@@ -7,7 +7,7 @@ class PostsController {
     const {title, description, image} = req.body
 
     if (!title || !description || !image) {
-      res.json({message: `Fields are required`, value: null, status: false})
+      return res.json({message: `Fields are required`, value: null, status: false})
     }
 
     try {

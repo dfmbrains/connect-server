@@ -36,9 +36,10 @@ CREATE TABLE profiles
 
 CREATE TABLE subscriptions
 (
-    id      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id      UUID PRIMARY KEY         DEFAULT uuid_generate_v4(),
     target  UUID REFERENCES profiles (id),
-    user_id UUID REFERENCES profiles (id)
+    user_id UUID REFERENCES profiles (id),
+    created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE posts
@@ -51,4 +52,12 @@ CREATE TABLE posts
     image       UUID REFERENCES images (id),
     updated     TIMESTAMP WITH TIME ZONE,
     created     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE likes
+(
+    id      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post    UUID REFERENCES posts (id),
+    user_id UUID REFERENCES profiles (id),
+    created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
