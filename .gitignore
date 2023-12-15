@@ -26,3 +26,4 @@ yarn-error.log*
 /qomek.adminpanel/manifest
 .gitlab-ci.yml
 Dockerfile
+.vercel
