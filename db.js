@@ -3,23 +3,17 @@ require('dotenv').config({
 });
 
 const Pool = require('pg').Pool
-
-const poolOptions = {
+const pool = new Pool({
   user: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   host: process.env.POSTGRES_HOST,
   port: process.env.POSTGRES_PORT,
   database: process.env.POSTGRES_DATABASE,
-}
-
-if (poolOptions === 'production') {
-  poolOptions.ssl = {
+  ssl: {
     rejectUnauthorized: false,
     require: true,
     mode: 'require'
   }
-}
-
-const pool = new Pool(poolOptions)
+})
 
 module.exports = pool
