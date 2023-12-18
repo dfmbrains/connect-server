@@ -19,6 +19,22 @@ class SubscribeController {
     }
   }
 
+  async getIsProfileSubbed(req, res) {
+    const {targetUserId} = req.query
+
+    if (!targetUserId) {
+      return res.json({message: `TargetUserId is required`, value: null, status: false})
+    }
+
+    try {
+      const subscriber = selectOneElement(await db.query('SELECT * FROM subscriptions where target = $1 AND user_id = $2', [targetUserId, req.userId]))
+
+      res.json({message: '', value: !!subscriber, status: true})
+    } catch (err) {
+      res.status(500).send(`Error getting like status: ${err.message}`);
+    }
+  }
+
   async getUserSubscribers(req, res) {
     const {targetUserId} = req.query
 
@@ -65,6 +81,9 @@ class SubscribeController {
     const {targetUserId} = req.query
 
     if (!targetUserId) return res.json({message: `TargetUserId is required`, value: null, status: false})
+    if (targetUserId === req.userId) {
+      return res.json({message: `You can not subscribe yourself`, value: null, status: false})
+    }
 
     try {
       const isDuplicate = selectOneElement(await db.query('SELECT * FROM subscriptions where user_id = $1 AND target = $2', [req.userId, targetUserId]));

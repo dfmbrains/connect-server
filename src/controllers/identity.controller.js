@@ -28,7 +28,7 @@ class IdentityController {
     if (!username || !password || !firstName || !lastName) return res.json({message: 'Username, password, firstName and lastName are required.'});
 
     const duplicate = selectOneElement(await db.query('SELECT * FROM identity_users where username = $1', [username]));
-    if (duplicate) return res.json({message: 'User with this username already exist', status:false});
+    if (duplicate) return res.json({message: 'User with this username already exist', status: false});
 
     try {
       const hashedPass = await bcrypt.hash(password, 10);
@@ -58,6 +58,14 @@ class IdentityController {
       if (!foundIdentityProfile) {
         return res.status(401).json({
           message: 'Not registered',
+          status: false,
+          value: null
+        });
+      }
+
+      if (!foundIdentityProfile.status) {
+        return res.status(403).json({
+          message: 'Your account had been blocked',
           status: false,
           value: null
         });

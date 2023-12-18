@@ -69,9 +69,15 @@ class PostsController {
     const offset = (currentPage - 1) * pageSize;
 
     try {
-      const posts = await db.query('SELECT * FROM posts ORDER BY likes LIMIT $1 OFFSET $2', [pageSize, offset])
+      const {rows} = await db.query('SELECT * FROM posts WHERE user_id != $1 ORDER BY likes LIMIT $2 OFFSET $3', [req.userId, pageSize, offset])
 
-      res.json(posts.rows)
+      const postsFullModel = await Promise.all(rows.map(async post => {
+        const profile = selectOneElement(await db.query('SELECT * FROM profiles where id = $1', [post.user_id]))
+
+        return {...post, profile}
+      }))
+
+      res.json(postsFullModel)
     } catch (err) {
       res.status(500).send(`Error fetching posts: ${err.message}`);
     }
@@ -89,9 +95,15 @@ class PostsController {
 
       if (subsTargets.length === 0) return res.json([]);
 
-      const posts = await db.query('SELECT * FROM posts where user_id = ANY($1) ORDER BY created LIMIT $2 OFFSET $3', [subsTargets, pageSize, offset])
+      const {rows} = await db.query('SELECT * FROM posts where user_id = ANY($1) ORDER BY created LIMIT $2 OFFSET $3', [subsTargets, pageSize, offset])
 
-      res.json(posts.rows)
+      const postsFullModel = await Promise.all(rows.map(async post => {
+        const profile = selectOneElement(await db.query('SELECT * FROM profiles where id = $1', [post.user_id]))
+
+        return {...post, profile}
+      }))
+
+      res.json(postsFullModel)
     } catch (err) {
       res.status(500).send(`Error fetching posts: ${err.message}`);
     }

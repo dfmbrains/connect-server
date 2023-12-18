@@ -24,6 +24,38 @@ class LikesController {
     }
   }
 
+  async getLikesCount(req, res) {
+    const {postId} = req.query
+
+    if (!postId) {
+      return res.json({message: `PostId is required`, value: null, status: false})
+    }
+
+    try {
+      const likes = selectOneElement(await db.query('SELECT COUNT(*) FROM likes WHERE post_id = $1', [postId]))
+
+      res.json({message: '', value: +likes.count, status: true})
+    } catch (err) {
+      res.status(500).send(`Error getting likes by post: ${err.message}`);
+    }
+  }
+
+  async getIsProfileLiked(req, res) {
+    const {postId} = req.query
+
+    if (!postId) {
+      return res.json({message: `PostId is required`, value: null, status: false})
+    }
+
+    try {
+      const like = selectOneElement(await db.query('SELECT * FROM likes where post_id = $1 AND user_id = $2', [postId, req.userId]))
+
+      res.json({message: '', value: !!like, status: true})
+    } catch (err) {
+      res.status(500).send(`Error getting like status: ${err.message}`);
+    }
+  }
+
   async createLike(req, res) {
     const {postId} = req.query
 
